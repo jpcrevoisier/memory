@@ -10,14 +10,17 @@ Pour des questions de praticité, j'ai voulu rendre le script disponible en lign
 
 Vous trouverez donc un répertoire php5 contenant les fichiers déployés chez Free.
 
-Avant toute utilisation prenez le soin soit de modifier le fichier mysqli.inc.php, soit assurez vous d'utiliser les variables d'environement pour une utlisation avec Docker :
+### Utilisation :
+
+Avant toute utilisation pensez a executer le script sql [sql/setup.sql](https://github.com/jpcrevoisier/memory/raw/main/sql/setup.sql) pour créer la table.
+Prenez aussi le soin, soit de modifier le fichier mysqli.inc.php, soit assurez vous d'utiliser les variables d'environement pour une utlisation avec Docker :
 
 - mysql_host
 - mysql_user
 - mysql_pass
 - mysql_base
 
-# Les screenshots
+### Les screenshots
 
 Tel que demandé, voici une série de capture d'écran correspondantes a différentes étapes du jeu :
 
