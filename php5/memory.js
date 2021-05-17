@@ -109,6 +109,8 @@ var memory={
 	{
 		// a la fin du jeu on nettoie le timer
 		clearInterval(this.currentGame.timer);
+		// Et on le met a null pour une nouvelle partie.
+		this.currentGame.timer=null;
 		// On charge une variable avec les données du jeu en cours
 		game={
 			pseudo: this.currentGame.pseudo,
