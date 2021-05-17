@@ -22,21 +22,26 @@ Avant toute utilisation prenez le soin soit de modifier le fichier mysqli.inc.ph
 Tel que demandé, voici une série de capture d'écran correspondantes a différentes étapes du jeu :
 
 ![Tableau des scores](scores.png)
+
 Tableau des scores
 
 
 ![Début de partie](debut.png)
+
 Début de partie
 
 
 ![En cours de partie](cours.png)
+
 En cours de partie
 
 
 ![Partie gagnée](gagne.png)
+
 Partie gagnée
 
 
 ![Partie perdue](perdu.png)
+
 Partie perdue
 
