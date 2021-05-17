@@ -1,10 +1,8 @@
 <?php
-/*\
- * 
- * Ici je créer une class memoryStorage dont le but est de toujours fournir un retour au format json même en cas d'erreur
- * 
- * 
-\*/
+/*
+* On créer une class memoryStorage dont le but est de gérer l'enregistrement et le renvoie des scores
+* avec la possibilité de fournir un retour au format json même en cas d'erreur quand c'est possible.
+*/
 
 
 class memoryStorage
@@ -47,9 +45,7 @@ class memoryStorage
 	}
 	function sendFeedBack($feedback, $header=null)
 	{
-		/* Dans un premier temps on test le type de variable que contient feedback car on ne 
-		 * 
-		 */
+		// On test que les informations recues par la méthode sont aux formats json et exploitables 
 		switch(gettype($feedback))
 		{
 			case 'boolean' :
@@ -84,29 +80,8 @@ class memoryStorage
 	{
 		// Ici nous allons tester l'existence de variables d'environement contenant les informations de connection au serveur mysql
 		// Ce n'est pas une méthode très conventionelle mais elle permet de ne pas stocker ces informations dans un fichier
-		// mais de les transmettre via la ligne de commande dans le cadre de l'utilisation d'un image Docker
+		// et de les transmettre via la ligne de commande dans le cadre de l'utilisation d'une image Docker
 
-		// Si la variable d'environement mysql_host a été renseignée.
-		if(isset($_ENV['mysql_host']))
-		{	// on l'affecte a la variable hostname de notre objet.
-			
-		}
-		// Si la variable d'environement mysql_user a été renseignée.
-		if(isset($_ENV['mysql_user']))
-		{	// on l'affecte a la variable username de notre objet.
-			
-		}
-		// Si la variable d'environement mysql_pass a été renseignée.
-		if(isset($_ENV['mysql_pass']))
-		{	// on l'affecte a la variable password de notre objet.
-			
-		}
-		// Si la variable d'environement mysql_base a été renseignée.
-		if(isset($_ENV['mysql_base']))
-		{	// on l'affecte a la variable database de notre objet.
-			
-		}
-		
 		if(
 			isset($_ENV['mysql_host'])
 		&&
@@ -122,6 +97,7 @@ class memoryStorage
 			$this->password=$_ENV['mysql_pass'];
 			$this->database=$_ENV['mysql_base'];	
 		}
+		// Si une de ces variables n'est pas renseignées, nous nous retournons vers la lecture d'un fichier de configuration plus traditionel
 		elseif($mysqliConfig=require_once('mysqli.inc.php'))
 		{
 			$mysqliConfig=require_once('mysqli.inc.php');
@@ -130,19 +106,12 @@ class memoryStorage
 			$this->password=$mysqliConfig['password'];
 			$this->database=$mysqliConfig['database'];
 		}
+		// Si la récupération de cette configuration n'est pas non plus possible, on renvoit une erreur.
 		else
 		{
 			$this->sendFeedBack(array('succes'=>false,'message'=>'Impossible de déterminer le paramétrage de connexion MySQL !','datas'=>null), '500 Internal Server Error');
 		}
-		
-		// Si une des variables de connexion n'est pas définie 
-		// $this->sendFeedBack(array($_ENV, $this->hostname, $this->username, $this->password, $this->database));
-		if( $this->hostanme==null || $this->username==null || $this->password==null || $this->database==null )
-		{	// On charge l'ensemble des variables depuis un fichier de configuration
-			
-			// $this->sendFeedBack(array(__LINE__, $this->hostname, $this->username, $this->password, $this->database));
-			
-		}
+		// On lance la connexion mysql et on test l'objet pour nous assurer qu'il est bien instancié.
         $this->mysqli = new mysqli($this->hostanme, $this->username, $this->password, $this->database);
 		if ($this->mysqli->connect_errno) {
 			$this->sendFeedBack(array('succes'=>false,'message'=>'Echec lors de la connexion à MySQL : ('.$this->mysqli->connect_errno.') '.$this->mysqli->connect_error,'datas'=>null), '500 Internal Server Error');
@@ -151,11 +120,15 @@ class memoryStorage
 	}
 	function selectDatas()
 	{
+		// C'est la méthode de renvoi des scores
+		// On forge la requete pour récupérer les 25 premiers enregistrements classé par score.
 		$query="select `pseudo`, `score`, `grid` from `memory` order by `score` desc limit 25;";
+		// On exécute la requête et on renvoi une erreur en cas de problème.
 		if (!$res = $this->mysqli->query($query))
 		{
 			$this->sendFeedBack(array('succes'=>false,'message'=>'Echec lors de la récupération des données : ('.$this->mysqli->errno.') '.$this->mysqli->error,'datas'=>null), '500 Internal Server Error');
 		}
+		// On instancie un tableau vide dans lequel vont être stocké les resultats.
 		$datas=array();
 		$x=0;
 		while ($row = $res->fetch_assoc()) {
@@ -168,15 +141,20 @@ class memoryStorage
 	}
 	function insertDatas()
 	{
+		// Méthode d'insertion des données.
+		// On récupère les données sur l'entrée standard ( on aurait pu utiliser php://stdin )
 		$this->rawDatas=file_get_contents('php://input');
+		// Si il n'y a pas de donnée on renvoi une erreur.
 		if(empty($this->rawDatas))
 		{
 			$this->sendFeedBack(array('succes'=>false,'message'=>'Aucune donnée recue !','datas'=>null), '415 Unsupported Media Type');
 		}
+		// Si les données ne sont pas exploitable en json on envoi aussi une erreur.
 		if(!$this->postdata=json_decode($this->rawDatas, true))
 		{
 			$this->sendFeedBack(array('succes'=>false,'message'=>'les données envoyées ne sont pas au format json !','datas'=>$this->rawDatas), '415 Unsupported Media Type');
 		}
+		// Si les données sont exploiatbles en json, on teste que les données ne soient pas vides et qu'elles soient du bon type.
 		if(
 			empty($this->postdata['pseudo'])
 		||
@@ -193,6 +171,7 @@ class memoryStorage
 		{
 			$this->sendFeedBack(array('succes'=>false,'message'=>'les données envoyées ne sont pas au format attendue !','datas'=>$this->postdata), '415 Unsupported Media Type');
 		}
+		// On peut donc forger la requete d'insertion en prenant garde d'échaper les données avant l'insertion ( mysqli->real_escape_string )
 		$query="insert into
 				`memory`
 			(
@@ -206,13 +185,14 @@ class memoryStorage
 				".$this->mysqli->real_escape_string($this->postdata['score']).",
 				'".$this->mysqli->real_escape_string(implode(',',$this->postdata['grid']))."'
 			);";
-		
+		// On lance l'insertion en base en testant le retour pour renvoyer une erreur en cas de probleme.
 		if (!$res = $this->mysqli->query($query))
 		{
 			$this->sendFeedBack(array('succes'=>false,'message'=>'Echec lors de l\'insertion des données en base : ('.$this->mysqli->errno.') '.$this->mysqli->error,'datas'=>null), '500 Internal Server Error');
 		}
 		else
 		{
+			// Si tout s'est bien passé, on peut selectionner le dernier enregistrement avec mysqli->insert_id
 			$query="select `pseudo`, `score`, `grid`, `created` from `memory` where `id`=".$this->mysqli->insert_id.";";
 			if (!$res = $this->mysqli->query($query))
 			{
