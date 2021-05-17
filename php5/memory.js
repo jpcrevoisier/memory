@@ -1,4 +1,6 @@
+// Création de la classe memory
 var memory={
+	// Initialisation des variables
 	currentGame: {
 		selectedCard: null,
 		timer: null,
@@ -8,18 +10,118 @@ var memory={
 	},
 	oldGames : [
 	],
+	// Methode d'initialiation qui sera appelée au chargement du DOM
+	init: function()
+	{
+		// On essai de charger le localStorage pour récupérer les scores des anciennes parties
+		try
+		{
+			this.oldGames=JSON.parse(localStorage.oldGames);
+		}
+		catch(e)
+		{
+			// Si le localStorage est vide, on l'initalise avec un tableau vide
+			localStorage.oldGames='[]';
+			this.oldGames=JSON.parse(localStorage.oldGames);
+		}
+		// On lance la récupération des scores.
+		this.getScores();
+		this.showScores();
+		return true;
+	},
+	getScores: function()
+	{
+		// On initialise l'objet xmlHttpRequest
+		var xmlhttp = new XMLHttpRequest();
+		// On precise la methode et l'url
+		xmlhttp.open("GET", "store.php");
+
+		xmlhttp.onload=function(event)
+		{
+			// Vérification du code HTTP 200 ( les autres codes indiquent des erreurs )
+			if(xmlhttp.status === 200)
+			{
+				// On tente de parser la réponse en json
+				try {
+					records=JSON.parse(xmlhttp.responseText);
+				} catch (e) {
+					// On sort si ce n'est pas possible.
+					return false;
+				}
+				// On pousse le contenue du tableau vers la variable contenant les scores
+				for(s=0;s<records.datas.length;s++)
+				{
+					record=records.datas[s];
+					memory.oldGames.push(record);
+				}
+				// et on lance le tri des scores.
+				memory.sortGames();
+			}
+			else
+			{
+				// On log une erreur en cas de code différent de 200
+				console.warn('Une erreur est survenue lors de la récupération des scores !', xmlhttp.responseText);
+			}
+		};
+		// On envoi la requete HTTP.
+		xmlhttp.send();
+	},
+	showScores: function()
+	{
+		// On efface le contenue de la page
+		this.clearElement();
+		// On charge la variable contenant les scores a partir du localStorage
+		this.oldGames=JSON.parse(localStorage.oldGames);
+		// Ici on utilise le dom pour créer l'interface.
+		// Nous aurions pu simplifier en utilisant innerHTML au détriment des performances
+		gameDivContent=document.createElement('div');
+		document.body.appendChild(gameDivContent);
+		gameDivContent.setAttribute('id','gameDivContent');
+		mainGrid=document.createElement('div');
+		gameDivContent.appendChild(mainGrid);
+		mainGrid.setAttribute('id','mainGrid');
+		mainGrid.classList.add("grid");
+		scoreDiv=document.createElement('div');
+		mainGrid.appendChild(scoreDiv);
+		scoreDiv.setAttribute('id','scoreDiv');
+		// On boucle 5 fois pour avoir les 5 meilleurs scores
+		for(i=0;i<5;i++)
+		{
+			if(this.oldGames[i]!=undefined)
+			{
+				game=this.oldGames[i];
+				div=document.createElement('div');
+				scoreDiv.appendChild(div);
+				div.classList.add('score');
+				div.dataset.grid=game.grid;
+				div.addEventListener('click',function(e){memory.newGame(e.target.dataset.grid);});
+				div.appendChild(document.createTextNode(game.pseudo+' '+game.score+' 🎮'));
+			}
+		}
+		newGameButton=document.createElement('input');
+		gameDivContent.appendChild(newGameButton);
+		newGameButton.value='Nouvelle partie';
+		newGameButton.setAttribute('type','button');
+		newGameButton.setAttribute('id','newGame');
+		newGameButton.addEventListener('click',function(e){memory.newGame();});
+	},
 	endGame: function (win)
 	{
+		// a la fin du jeu on nettoie le timer
 		clearInterval(this.currentGame.timer);
+		// On charge une variable avec les données du jeu en cours
 		game={
 			pseudo: this.currentGame.pseudo,
 			score: this.currentGame.score,
 			grid: this.currentGame.grid
 		};
+		// en cas de victoire
 		if(win)
 		{
+			// On ajoute ce jeu au tableau des scores
 			this.oldGames.push(game);
 			this.sortGames();
+			// On forge le message du gagnant et on pousse les données vers le serveur
 			endGameComment="Bravo "+game.pseudo+" !!!\ntu as gagné avec "+game.score+" points ...";
 			var xmlhttp = new XMLHttpRequest();
 			xmlhttp.open("POST", "store.php");
@@ -28,6 +130,8 @@ var memory={
 		}
 		else
 		{
+			// En cas de défaite
+			// On récupere le nombre de paires réalisées pour afficher le message correspondant
 			progressValue=document.getElementById('progress').value;
 			if(progressValue>0)
 			{
@@ -45,18 +149,25 @@ var memory={
 				endGameComment="Désolé "+game.pseudo+",\ntu as perdu sans trouver de paire ...";
 			}
 		}
+		// On propose une autre partie dans tout les cas
 		endGameComment+='\nUne autre partie ?';
 		if (confirm(endGameComment))
 		{
+			// Si oui on relance un jeu
 			this.newGame();
 		} else {
+			// Sinon on réaffiche le tableau des scores.
 			this.showScores();
 		}
 	},
 	checkMe: function (event)
 	{
+		// C'est la fonction qui va vérifier qu'une paire est retournée.
+		// On récupère la carte qui vient d'être sélectionnée
 		document.getElementById('pseudo').setAttribute('contenteditable',false);
+		// Et on affecte le pseudo choisi a la variable du jeu courant.
 		this.currentGame.pseudo=document.getElementById('pseudo').innerText;
+		// On lance le timer qui va décompter les points
 		if(this.currentGame.timer===null)
 		{
 			this.currentGame.timer=setInterval(function(game){
@@ -108,7 +219,8 @@ var memory={
 		}
 
 	},
-	clearElement: function(target){
+	clearElement: function(target)
+	{	// Méthode d'éffacement d'un noeud html
 		if(target==undefined)
 		{
 			target=document.body;
@@ -119,8 +231,9 @@ var memory={
 		}
 	},
 	newGrid: function()
-	{
+	{	// Méthode de création d'une grille
 		availableSprite=new Array();
+		// Il y'a 18 figures possibles dans le sprite fourni
 		for(i=0;i<18;i++)
 		{
 			availableSprite[i]=i;
@@ -161,41 +274,17 @@ var memory={
 		}
 		return selectedCards;
 	},
-	getScores: function()
-	{
-		var xmlhttp = new XMLHttpRequest();   // new HttpRequest instance 
-		xmlhttp.open("GET", "store.php");
-		xmlhttp.onload=function(event)
-		{
-			if(xmlhttp.status === 200)
-			{
-				
-				try {
-					records=JSON.parse(xmlhttp.responseText);
-				} catch (e) {
-					return false;
-				}
-				for(s=0;s<records.datas.length;s++)
-				{
-					record=records.datas[s];
-					memory.oldGames.push(record);
-				}
-				memory.sortGames();
-			}
-			else
-			{
-				console.warn('Une erreur est survenue lors de la récupération des scores !', xmlhttp.responseText);
-			}
-		};
-		xmlhttp.send();
-	},
 	sortGames: function()
 	{
+		// On créer un tableau vide qui va receuillir les meilleur scores par pseudo.
+		// C'est pas très gentil mais on ne va garder qu'un score par pseudo, sinon c'est tout le temps les même ... 
 		bestPlayers=[];
+		// Donc on créer une entrée par pseudo
 		for(var i in memory.oldGames)
 		{
 			bestPlayers[memory.oldGames[i].pseudo]=memory.oldGames[i];
 		}
+		// et on compare les scores de chacune des entrées pour ne garder que le plus élevé
 		for(var i in memory.oldGames)
 		{
 			if(bestPlayers[memory.oldGames[i].pseudo].score<memory.oldGames[i].score)
@@ -203,11 +292,14 @@ var memory={
 			  bestPlayers[memory.oldGames[i].pseudo]=memory.oldGames[i];
 			}
 		}
+		// On effeca le contenue des parties enregistrées
 		memory.oldGames=[];
+		// Et on y pousse celles des meilleurs joueurs.
 		for(i in bestPlayers)
 		{
 		  memory.oldGames.push(bestPlayers[i]);
 		}
+		// On trie les entrées avec une fonction de comparaison des scores
 		this.oldGames=this.oldGames.sort(function(a,b)
 		{
 			if ( a.score > b.score )
@@ -220,59 +312,18 @@ var memory={
 			}
 			return 0;
 		});
+		// et on stocke ces informations dans le localStorage
 		localStorage.oldGames=JSON.stringify(this.oldGames);
-	},
-	byScore: function ( a, b )
-	{
-		if ( a.score > b.score )
-		{
-			return -1;
-		}
-		if ( a.score < b.score )
-		{
-			return 1;
-		}
-		return 0;
-	},
-	showScores: function()
-	{
-		this.clearElement();
-		this.oldGames=JSON.parse(localStorage.oldGames);
-		gameDivContent=document.createElement('div');
-		document.body.appendChild(gameDivContent);
-		gameDivContent.setAttribute('id','gameDivContent');
-		mainGrid=document.createElement('div');
-		gameDivContent.appendChild(mainGrid);
-		mainGrid.setAttribute('id','mainGrid');
-		mainGrid.classList.add("grid");
-		scoreDiv=document.createElement('div');
-		mainGrid.appendChild(scoreDiv);
-		scoreDiv.setAttribute('id','scoreDiv');
-		for(i=0;i<5;i++)
-		{
-			if(this.oldGames[i]!=undefined)
-			{
-				game=this.oldGames[i];
-				div=document.createElement('div');
-				scoreDiv.appendChild(div);
-				div.classList.add('score');
-				div.dataset.grid=game.grid;
-				div.addEventListener('click',function(e){memory.newGame(e.target.dataset.grid);});
-				div.appendChild(document.createTextNode(game.pseudo+' '+game.score+' 🎮'));
-			}
-		}
-		newGameButton=document.createElement('input');
-		gameDivContent.appendChild(newGameButton);
-		newGameButton.value='Nouvelle partie';
-		newGameButton.setAttribute('type','button');
-		newGameButton.setAttribute('id','newGame');
-		newGameButton.addEventListener('click',function(e){memory.newGame();});
 	},
 	newGame: function(selectedGrid)
 	{
+		// Affichage d'une nouvelle grille ou d'une grille précédente
+		// On efface la page
 		this.clearElement();
+		// et on affecte soit une nouvelle grille soit celle sélectionnée.
 		spriteIdxs=(selectedGrid!=undefined)?JSON.parse('['+selectedGrid+']'):this.newGrid();
 		this.currentGame.grid=spriteIdxs;
+		// Utilise encore le dom pour créer l'interface.
 		gameDivContent=document.createElement('div');
 		gameDivContent.setAttribute('id','gameDivContent');
 		mainGrid=document.createElement('div');
@@ -328,20 +379,6 @@ var memory={
 		gameDivContent.appendChild(progressBar);
 		document.body.appendChild(gameDivContent);
 	},
-	init: function()
-	{
-		try
-		{
-			this.oldGames=JSON.parse(localStorage.oldGames);
-		}
-		catch(e)
-		{
-			localStorage.oldGames='[]';
-			this.oldGames=JSON.parse(localStorage.oldGames);
-		}
-		this.getScores();
-		this.showScores();
-		return true;
-	}
 };
+// On lance l'affichage des intterfaces une fois que le dom est chargé
 window.addEventListener("DOMContentLoaded", function(event){memory.init();});
