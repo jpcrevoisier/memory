@@ -1,0 +1,22 @@
+2021-05-19 16:33:09 0 [Note] /usr/bin/mysqld (mysqld 10.5.9-MariaDB) starting as process 7 ...
+2021-05-19 16:33:09 0 [Note] InnoDB: Uses event mutexes
+2021-05-19 16:33:09 0 [Note] InnoDB: Compressed tables use zlib 1.2.11
+2021-05-19 16:33:09 0 [Note] InnoDB: Number of pools: 1
+2021-05-19 16:33:09 0 [Note] InnoDB: Using crc32 + pclmulqdq instructions
+2021-05-19 16:33:09 0 [Note] mysqld: O_TMPFILE is not supported on /var/tmp (disabling future attempts)
+2021-05-19 16:33:09 0 [Note] InnoDB: Using Linux native AIO
+2021-05-19 16:33:09 0 [Note] InnoDB: Initializing buffer pool, total size = 134217728, chunk size = 134217728
+2021-05-19 16:33:09 0 [Note] InnoDB: Completed initialization of buffer pool
+2021-05-19 16:33:09 0 [Note] InnoDB: If the mysqld execution user is authorized, page cleaner thread priority can be changed. See the man page of setpriority().
+2021-05-19 16:33:09 0 [Note] InnoDB: 128 rollback segments are active.
+2021-05-19 16:33:09 0 [Note] InnoDB: Creating shared tablespace for temporary tables
+2021-05-19 16:33:09 0 [Note] InnoDB: Setting file './ibtmp1' size to 12 MB. Physically writing the file full; Please wait ...
+2021-05-19 16:33:09 0 [Note] InnoDB: File './ibtmp1' size is now 12 MB.
+2021-05-19 16:33:09 0 [Note] InnoDB: 10.5.9 started; log sequence number 45118; transaction id 20
+2021-05-19 16:33:09 0 [Note] Plugin 'FEEDBACK' is disabled.
+2021-05-19 16:33:09 0 [Note] InnoDB: Loading buffer pool(s) from /var/lib/mysql/ib_buffer_pool
+2021-05-19 16:33:09 0 [Note] InnoDB: Buffer pool(s) load completed at 210519 16:33:09
+2021-05-19 16:33:09 0 [Note] Reading of all Master_info entries succeeded
+2021-05-19 16:33:09 0 [Note] Added new Master_info '' to hash table
+2021-05-19 16:33:09 0 [Note] /usr/bin/mysqld: ready for connections.
+Version: '10.5.9-MariaDB'  socket: '/run/mysqld/mysqld.sock'  port: 0  MariaDB Server
