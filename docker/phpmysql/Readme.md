@@ -176,7 +176,7 @@ Récupération de l'image depuis les depots de docker hub
 
 	docker pull jpcrevoisier/phpmysql:oclock
 
-Récupération de l'image a partir de l'archie fournie.
+Récupération de l'image a partir de l'archive [phpmysql-oclock.gz](https://github.com/jpcrevoisier/memory/raw/main/docker/phpmysql/phpmysql-oclock.gz).
 
 	docker load < phpmysql-oclock.gz
 
