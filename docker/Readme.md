@@ -34,13 +34,15 @@ Je vais réaliser ici les quatres exercices pour que vous puissiez les comparer 
 
 
 
+Pour l'instant, je n'ai réalisé que le premier exercice mais je reviens très vite avec les autres 😁
+
 ## Exercice n°1 : Php / Mysql dans une image unique <a name="PhpMysqlDocker"></a>
 
 ### Le déroulement <a name="deroulementPhpMysql"></a>
 
 D'un point de vue pratique, l'installation de mysql et de php en tant que service sur une même image n'est pas une bonne idée. Il est d'usage de séparer les deux et de ne les rassembler qu'a travers un Docker-compose tel que nous le verrons dans les exercices 3 et 4, mais lancons nous quand même pour tester tout ca. Nous allons partir de l'image d'une Alpine pour sa légerté et nous allons installer tour a tour, mysql puis php. 
 
-### Explication du Dockerfile <a name="dockerfilePhpMysql"></a>
+### Explication du [Dockerfile](https://github.com/jpcrevoisier/memory/raw/main/docker/phpmysql/Dockerfile) <a name="dockerfilePhpMysql"></a>
 
 On part d'une [Alpine](https://alpinelinux.org/)
 
@@ -74,7 +76,7 @@ Et on indique le script a lancer
 	CMD [ "/bin/ash","/memory/init.sh" ]
 
 
-### Explication du init.sh <a name="initPhpMysql"></a>
+### Explication du [init.sh](https://github.com/jpcrevoisier/memory/raw/main/docker/phpmysql/root/init.sh) <a name="initPhpMysql"></a>
 
 
 On déclare le sheebang ash puisque nous somme sur une [Alpine](https://alpinelinux.org/), donc [Busybox](https://fr.wikipedia.org/wiki/BusyBox).
@@ -194,9 +196,9 @@ Récupération de l'image depuis les depots de docker hub
 
 	docker pull jpcrevoisier/phpmysql:oclock
 
-Récupération de l'image a partir de l'archie fournie.
+Récupération de l'image a partir de l'archive fournie.
 
-	docker load < phpmysql-oclock.gz
+	docker load < [phpmysql-oclock.gz](https://github.com/jpcrevoisier/memory/raw/main/docker/phpmysql/phpmysql-oclock.gz)
 
 Création de l'image phpmysql:oclock ( renommez la comme ca vous chante :) )
 
